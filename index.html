@@ -118,8 +118,8 @@
   <h2>Complete Solutions for Your Home & Business</h2>
   <p>Electrical, Plumbing, Construction, Real Estate, and Electronics with 5+ Years of Trusted Experience</p>
   <div class="tamil">உங்கள் வீடு மற்றும் வணிகத்திற்கு முழுமையான தீர்வுகள்: மின், குழாய், கட்டுமானம், நிலம் & மின்னணு சேவைகள்</div>
-  <button onclick="window.location.href='tel:9566815089'">Call Now</button>
-  <button onclick="window.location.href='https://wa.me/9566815089'" target="_blank">WhatsApp</button>
+  <button onclick="window.location.href='tel:+919566815089'">Call Now</button>
+  <button onclick="window.location.href='https://wa.me/+919566815089'" target="_blank">WhatsApp</button>
 </div>
 
 <!-- ===== NAVIGATION ===== -->
@@ -165,11 +165,11 @@
 <div class="section" id="contact">
   <h2>Contact Us / தொடர்பு கொள்ள</h2>
   <div class="card">
-    <p><strong>Eugine .A (Electrical / Plumbing / Electronics):</strong> <a href="tel:9566815089">9566815089</a> | <a href="https://wa.me/9566815089" target="_blank">WhatsApp</a></p>
-    <p class="tamil"><strong>யூஜின் .A (மின் / குழாய் / மின்னணு):</strong> <a href="tel:9566815089">9566815089</a> | <a href="https://wa.me/9566815089" target="_blank">WhatsApp</a></p>
+    <p><strong>Eugine .A (Electrical / Plumbing / Electronics):</strong> <a href="tel:+919566815089">+919566815089</a> | <a href="https://wa.me/+919566815089" target="_blank">WhatsApp</a></p>
+    <p class="tamil"><strong>யூஜின் .A (மின் / குழாய் / மின்னணு):</strong> <a href="tel:+919566815089">+919566815089</a> | <a href="https://wa.me/+919566815089" target="_blank">WhatsApp</a></p>
 
-    <p><strong>Salamon .P (Construction / Real Estate):</strong> <a href="tel:9786487985">9786487985</a></p>
-    <p class="tamil"><strong>சாலமோன் .P (கட்டுமானம் / நிலம் & கட்டிடம் விற்பனை):</strong> <a href="tel:9786487985">9786487985</a></p>
+    <p><strong>Salamon .P (Construction / Real Estate):</strong> <a href="tel:+919786487985">+919786487985</a></p>
+    <p class="tamil"><strong>சாலமோன் .P (கட்டுமானம் / நிலம் & கட்டிடம் விற்பனை):</strong> <a href="tel:+919786487985">+919786487985</a></p>
 
     <p>Email: <a href="mailto:lovelycross.engg@gmail.com">lovelycross.engg@gmail.com</a></p>
     <p class="tamil">மின்னஞ்சல்: <a href="mailto:lovelycross.engg@gmail.com">lovelycross.engg@gmail.com</a></p>
@@ -194,7 +194,13 @@
 
 <!-- ===== FIREBASE POSTS SCRIPT ===== -->
 <script>
-  const adminPassword = "1234";
+  let posts = [];
+const adminPassword = "Eugine@03072001";
+
+window.onload = function() {
+  sessionStorage.removeItem("isAdmin"); // logout admin when page refreshes
+  renderPosts(); // show posts
+};
 
   // Initialize Firebase
   const firebaseConfig = {
@@ -211,10 +217,15 @@
 
   // Admin login
   function showAdminLogin() {
-    const pass = prompt("Enter admin password:");
-    if(pass === adminPassword) document.getElementById("adminPanel").style.display = "block";
-    else alert("Wrong password!");
+  const pass = prompt("Enter admin password:");
+  if(pass === adminPassword) {
+    document.getElementById("adminPanel").style.display = "block";
+    sessionStorage.setItem("isAdmin", "true");   // ✅ mark as admin
+    renderPosts(); // refresh posts so delete button appears
+  } else {
+    alert("Wrong password!");
   }
+}
   function hideAdminPanel() { document.getElementById("adminPanel").style.display = "none"; }
 
   // Add post to Firebase
@@ -237,28 +248,43 @@
   }
 
   // Delete post
-  function deletePost(id){
-    if(confirm("Are you sure to delete this post?")){
-      db.collection("posts").doc(id).delete().catch(err=>alert("Error deleting post: "+err));
-    }
+  function deletePost(id) {
+  if(confirm("Are you sure you want to Delete this post?")) {
+    db.collection("posts").doc(id).delete();
   }
+}
 
   // Render posts
-  function renderPosts(){
-    const postList = document.getElementById("postList");
-    db.collection("posts").orderBy("timestamp","desc").onSnapshot(snapshot=>{
-      postList.innerHTML="";
-      snapshot.forEach(doc=>{
-        const p = doc.data();
-        const div = document.createElement("div");
-        div.className="post";
-        let imgHtml = p.image ? `<br><img src="${p.image}">` : "";
-        div.innerHTML=`<span class="deleteBtn" onclick="deletePost('${doc.id}')">✖</span>
-          <strong>${p.title}</strong><br>${p.desc}${imgHtml}`;
-        postList.appendChild(div);
-      });
+  function renderPosts() {
+  const postList = document.getElementById("postList");
+  const isAdmin = sessionStorage.getItem("isAdmin");
+
+  db.collection("posts").orderBy("timestamp", "desc")
+  .onSnapshot(snapshot => {
+    postList.innerHTML = "";
+
+    if(snapshot.empty){
+      postList.innerHTML = "<p>No updates yet.</p>";
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      const p = doc.data();
+      const id = doc.id;
+
+      const div = document.createElement("div");
+      div.className = "post";
+
+      div.innerHTML = `
+        ${isAdmin ? `<span class="deleteBtn" onclick="deletePost('${id}')">✖</span>` : ""}
+        <strong>${p.title}</strong><br>${p.desc}
+        ${p.image ? `<br><img src="${p.image}">` : ""}
+      `;
+
+      postList.appendChild(div);
     });
-  }
+  });
+}
 
   // Initial load
   renderPosts();
