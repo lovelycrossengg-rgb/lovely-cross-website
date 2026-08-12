@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /*.pdf$
+
+Sitemap: https://lovelycrossengg-rgb.github.io/lovely-cross-website/sitemap.xml
